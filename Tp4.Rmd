@@ -1,0 +1,89 @@
+---
+title: "Tp4 Imene Ouahrani - Anaëlle Dessaigne"
+output: html_document 
+---
+
+
+
+```{r}
+library(MASS)
+library(corrplot)
+library(FactoMineR)
+library(factoextra)
+```
+
+
+#### Importation des données
+
+```{r}
+Data=read.csv("top50.csv")
+### Regarder l’aide deread.csv#Il y a des options pour gérer des fichiers avec d’autres spécificités.
+is.data.frame(Data)
+```
+### Exercice : Faire une ACP du tableau des variables quantitatives.
+
+#### (1) Création d'un tableau des variables quantitatives
+
+```{r}
+####tableau des variables qualitatives####
+qualitatives = Data[,c(2, 3, 4)]
+
+####Tableau des variables quantitatives####
+quantitatives = Data[,-c(1, 2, 3, 4)]
+
+quantitatives
+```
+
+#### (2) Calcul des valeurs propres
+
+```{r}
+res.pca = PCA(quantitatives, scale.unit=TRUE, ncp=2, graph=F)
+res.pca
+
+#Affichage pour chaque axe, des valeurs propres, des valeurs propres cumulées, puis des valeurs propres cumulées en pourcentage  
+res.pca$eig
+
+```
+
+#### (3) Choix du nombre d'axes
+
+##### (a) Critère de Kaiser
+
+```{r}
+#Selon le critère de Kaiser, on retient les valeurs propres des axes qui sont supérieurs à l'inertie moyenne (∑λi/p = 10/10 = 1 tel que p représente le nombre total d'axes)
+#Puisque λ1, λ2, λ3 et λ4 sont supérieures à 1, on retient alors 4 axes qui représentent 63.78359% de l’inertie
+
+```
+
+##### (b) Critère du coude
+
+```{r}
+inertie = res.pca$eig[,2]
+barplot(inertie, ylab="% d'inertie", names.arg=round(inertie,2))
+title("Eboulis des valeurs propres en %")
+
+#Selon le critère du coude, sur l’ébouli des valeurs propres, on observe un décrochement (coude) suivi d’une décroissance régulière. On sélectionne les axes avant le décrochement. 
+#On observe une décroissance rapide de la valeur propre de l'axe 1 à la valeur propre de l'axe 2. À partir de la valeur propre de l'axe 2, on observe une décroissance régulière. Nous retenons donc l'axe 1 et 2. 
+
+```
+#### (4) Visualisation des coordonnées 
+
+```{r}
+res.pca$ind$coord[,1:2]
+```
+#### (5) Tracer les graphiques     
+
+```{r}
+#cercle de corrélation de toutes les variables quantitatives
+res.pca = PCA(quantitatives, scale.unit=TRUE, ncp=2, graph=T)
+```
+```{r}
+#cercle de corrélation des variables quantitatives qui ont un cos2 > 0.5
+graph.var (res.pca, lim.cos2.var=0.5, new.plot=TRUE)
+
+#Nous allons classer les variables selon les dimensions en gardant les variables qui ont un cos2 supérieur à 0.5
+
+#Pour la dimension 1, on oppose les variables Energy, Loudness..dB.. aux variables Beats.Per.Minute et Speechiness
+#Pour la dimension 2, on isole les variables Beats.Per.Minute, Speechiness, Energy et Loudness..dB.. sur la partie positive.
+
+```

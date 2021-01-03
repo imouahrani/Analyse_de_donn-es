@@ -1,0 +1,258 @@
+---
+title: "Tp3 Imene Ouahrani - Anaëlle Dessaigne"
+output: html_document
+---
+
+
+```{r}
+library(MASS)
+library(corrplot)
+```
+
+
+#### Importation des données
+
+```{r}
+Dat=read.csv("top50.csv")
+### Regarder l’aide deread.csv#Il y a des options pour gérer des fichiers avec d’autres spécificités.
+is.data.frame(Dat)
+```
+
+#### Affichage d’informations sur les dimensions du tableau de données : Dat
+
+```{r}
+#affichage de la dimension de datdon
+dim(Dat )
+ncol(Dat )
+nrow(Dat )
+#affichage des noms de lignes et colonnes
+dimnames(Dat)
+rownames(Dat)
+colnames(Dat)
+
+head(Dat)
+```
+
+### Exercice 1. Visualisation et graphiques
+
+```{r}
+####tableau des variables qualitatives####
+quali_song = Dat[,c(2, 3, 4)]
+
+####Tableau des variables quantitatives####
+quanti_song = Dat[,-c(1, 2, 3, 4)]
+
+
+cat("La corrélation entre l'énergie de la musique et sa popularité est de :", cor(Dat$Energy,Dat$Popularity), "\n")
+P<-cor(Dat$Energy,Dat$Popularity)
+plot(Dat$Energy,Dat$Popularity)
+title(main="Popularité en fontion de l'énergie")
+
+cat("La corrélation entre le nombre de beats par minute de la musique et son énergie est de :", cor(Dat$Beats.Per.Minute,Dat$Energy))
+P<-cor(Dat$Beats.Per.Minute,Dat$Energy)
+plot(Dat$Beats.Per.Minute,Dat$Energy)
+title(main="Energie en fonction du nombre de beats par minute")
+
+```
+
+### Exercice 2. Quantification de la relation entre deux variables quantitatives : coefficients de corrélationlinéaire et tests ...
+
+#### (1) Coefficients de corrélation linéaire :
+
+
+```{r}
+cat("\n\nLa corrélation entre toutes les variables quantitatives : \n", cor(quanti_song))
+corrplot(cor(quanti_song), method="circle")
+title(main="Matrice de corrélation")
+
+cat("\n\nOn peut voir grâce à la matrice de corrélation qu'il y a un lien entre le volume de la musique et son énergie : ", cor(Dat$Loudness..dB..,Dat$Energy))
+
+
+plot(quanti_song)
+
+
+```
+
+##### (2) Tests sur le coefficient de corrélation linéaire
+
+##### (a) La fonction cor.test
+
+```{r}
+#hypothèse nulle (H0) : μ0 = cor(Dat$Loudness..dB..,Dat$Energy)
+
+#hypothèse alternative (H1) : μ0 != 0
+cor.test(Dat$Loudness..dB..,Dat$Energy)
+
+#(H1) : μ0 < 0
+cor.test(Dat$Loudness..dB..,Dat$Energy,alt="less") 
+
+#(H1) : μ0 > 0
+cor.test(Dat$Loudness..dB..,Dat$Energy,alt="greater")
+
+```
+
+##### (b) Test de comparaison à un coefficient de corrélation linéaire de référence
+
+```{r}
+cor0.test <- function(x, y, rho0=0, alternative = c("two.sided", "less", "greater") ) {
+  
+  n <- length(x)
+  r <- cor(x,y)
+  z <- log((1+r)/(1-r))/2 
+  Ez <- log((1+rho0)/(1-rho0))/2 ## la moyenne de Z
+  stat <- (z-Ez)/sqrt(1/(n-3)) ## Z centrée-réduit
+  if (alternative[1] == "two.sided")
+    pvalue <- 2*pnorm(abs(stat),lower.tail = FALSE)
+  
+  if (alternative[1] == "less")
+    pvalue <- pnorm(stat,lower.tail = TRUE)
+  
+  if (alternative[1] == "greater")
+    pvalue <- pnorm(stat,lower.tail = FALSE)
+  
+  return(list(statistic=stat,p.value=pvalue))
+
+}
+
+cor0.test(Dat$Loudness..dB.., Dat$Energy, rho0 = 0.8, alt = "less")
+
+```
+
+### Exercice 3. Modélisation : modèle de régression linéaire
+
+#### (1) Les coefficients du modèle :Y=ax+b
+
+
+```{r}
+res = lm(Dat$Loudness..dB..~Dat$Energy,data=Dat)
+plot(Dat$Loudness..dB..~Dat$Energy,data=Dat)
+title(main = "Le volume en fonction de l'énergie")
+
+#ligne de régression
+abline(res$coef,col=2)
+
+```
+
+#### (2) Significativité du modèle 
+
+```{r}
+summary(res)
+
+```
+
+### Exercice 4. Visualisation et graphiques
+
+#### (1) Caractéristiques par modalités : Plusieurs approche exemple : utilisation des fonctions aggregate(),subset(), lapply() ou split().
+
+```{r}
+#Moyenne de popularité suivant le genre
+aggregate(Dat$Popularity,list(x=Dat$Genre),mean)
+
+#voici le résumé statistique des 4 musiques pop ayant une popularité supérieure à 85
+summary(subset(Dat, Dat$Genre == "pop" & Dat$Popularity > 85),maxsum=50)
+
+#on sépare tous les genres de musique, et on fait leur résumé statistique en considérant seulement leur popularité
+lapply(split(Dat$Popularity, Dat$Genre),summary)
+
+#on sépare tous les genres de musique, et on calcule la variance en considérant toutes les variables quantitatives
+lapply(split(quanti_song, Dat$Genre), var)
+
+
+```
+
+#### (2) Graphiques : faire les boxplot parallèles dans chaque cas.
+
+```{r}
+boxplot(Dat$Popularity~Dat$Genre, data=Dat)
+title(main = "La popularité des différents genres de musique")
+
+boxplot(Dat$Popularity~Dat$Artist.Name, data=Dat)
+title(main = "La popularité des différents artistes")
+```
+
+
+### Exercice 5. Quantification de la relation entre une variable qualitative et une variable quantitative :rapport de corrélation et test de comparaison de moyennes.
+
+#### (1) Calculer le rapport de corrélation
+
+```{r}
+#Y-a-t-il une différence significative entre les musiques pop et les musiques dance pop en terme de popularité ?
+
+#Avant cela, nous allons créer un nouveau dataframe contenant uniquement les musiques de genre pop et dance pop
+Dat2 = Dat[Dat$Genre == "pop" | Dat$Genre == "dance pop",]
+
+#variance totale
+Vartot = var(Dat2$Popularity)
+cat("variance totale = ", Vartot, "\n")
+
+#variance intra-groupe
+
+#Les variances séparées.
+varFG = lapply(split(Dat2$Popularity, Dat2$Genre), var)
+print("variance intra-groupe :")
+varFG[]
+
+#on peut voir que la variance intra-pop est nettement  supérieure à la variance intra-dance pop
+#les  variances  des  groupes ne sont donc pas homogènes
+
+#Le nombre total pour chaque genre de musique
+nFG = lapply(split(Dat2$Popularity, Dat2$Genre),length)
+print("nombre total de chaque groupe")
+nFG[]
+
+#variance intra-groupe = moyenne pondérée des variances des groupes 'pop' et 'dance pop'.
+VarIntra = (nFG$pop * varFG$pop + nFG$'dance pop' * varFG$'dance pop') / nrow(Dat2)
+cat("\nvariance intra = ", VarIntra)
+
+#variance inter-groupe = variance totale-variance intra-groupe.
+Varinter = Vartot - VarIntra
+cat("\nvariance inter = ", Varinter)
+
+#à cause de la inhomogénéité des variances intra-groupe, la variance intra-groupe est supérieure à la variance inter-groupe
+#alors la variance inter-groupe devient négative
+
+
+#rapport de correlation 
+rapportdecor = sqrt(Varinter/Vartot)
+cat("\nrapport de corrélation = ", rapportdecor)
+
+#le rapport de corrélation est impossible dû à la variance inter-groupe négative
+
+varFG=lapply(split(Dat2$Popularity, Dat2$Genre), var)
+varFG[]
+
+
+```
+
+#### (2)Test de comparaison de moyenne. fonction t.test sous R.
+
+```{r}
+#Tester l’égalité des variances, la fonction var.test()
+#(H0) la variance de Popularity est la même quelque soit le genre de musique
+#(H1) : la variance de Popularity est différente selon le genre de musique
+
+var.test(Dat2$Popularity~Dat2$Genre, data=Dat2)
+
+#La p-value est égale à 0.3539 > 5% donc on accepte H0 donc on conclut à l’égalité des variances
+
+#Tester l’égalité des moyenne, la fonction t.test()
+t.test(Dat2$Popularity~Dat2$Genre, data=Dat2,var.equal=TRUE)
+
+#La p-value est égale à 0.9539 > 5% donc on accepte H0 donc on conclut à l’égalité des moyennes
+
+```
+### Exercice 6. Modélisation - ANOVA à 1 facteur : poids en fonction du genre
+
+```{r}
+anov = lm(Dat2$Popularity~Dat2$Genre, data=Dat2)
+summary(anov)
+
+```
+
+### Exercice 8. Quantification de la relation entre les deux variables : test du chi-deux d’indépendance
+
+```{r}
+chisq.test(Dat2$Popularity, Dat2$Liveness)
+
+```
+

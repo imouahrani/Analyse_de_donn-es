@@ -1,0 +1,243 @@
+---
+title: "Tp2 Imene Ouahrani - Anaëlle Dessaigne"
+output: html_document
+---
+
+
+```{r}
+library(MASS)
+```
+
+### 1. Importation des données
+
+```{r}
+
+datdon=scan("statlab.txt")
+datdon=matrix(datdon,ncol=19,byrow=T)
+is.data.frame(datdon)
+
+```
+
+```{r}
+###Conversion en dataframe###
+datdon=data.frame(datdon)
+dimnames(datdon)
+rownames(datdon)
+colnames(datdon)
+
+
+#### Gestion des lecture du nombre de variables##
+varname=c("sexenf","gsenf","tenf_n","penf_n", "tenf_10","penf_10","gsmere","agem_n","pmere_n","consm_n","tmere","pmere_10", "consm_10","agep_n", "consp_n","tpere","ppere_10","revf_n","revf_10")
+dimnames(datdon)
+rownames(datdon)
+colnames(datdon)
+
+###On va remplacer les noms initials des variables par ceux indiqués dans varname
+colnames(datdon)=varname
+dimnames(datdon)
+rownames(datdon)
+colnames(datdon)
+```
+
+
+### 2. Le tableau de données 
+```{r}
+head(datdon, 10)
+tail(datdon, 10)
+```
+
+### 3. Pré - traîtement des variables
+
+#### 3.1 Codage des variables qualitatives pour que l’on puisse les reconnaître.
+```{r}
+
+summary(datdon$sexenf)
+
+
+```
+
+#### 3.2 Faire deux tableaux séparant des variables quantitatives et qualitatives.
+```{r}
+####tableau des variables qualitatives####
+quali=datdon[,c(1,2,7,10,13,15)]
+
+####Tableau des variables quantitatives####
+quanti=datdon[,-c(1,2,7,10,13,15)]
+
+quali[]
+quanti[]
+
+```
+
+### 4. Analyses univariées
+
+#### 4.1.Premier résumés statistiques : informations générales sur tout le tableau de données
+
+##### 4 .1.1 La fonction summary()
+
+##### (1) Résumé statistique de tout le tableau. La fonctionsummary()donne un résumé statistique desvariables.
+
+```{r}
+summary(datdon)
+summary(datdon,maxsum=9)
+
+```
+
+##### (2) Résumé statistique de chaque variable.
+
+```{r}
+
+summary(datdon$gsenf) 
+summary(datdon$penf_n)
+```
+
+##### (3) Résumé de tableaux séparées de variables quantitatives et qualitatives
+
+```{r}
+####Tableau des variables quantitatives####
+summary(quanti) 
+####Tableau des variables quantitatives####
+summary(quali)
+```
+
+#### 4.1.2.Autres fonctions de descriptions de bases
+
+```{r}
+cat("moyenne = ", mean(datdon$tenf_10), "\n")
+cat("ecart-type = ", sd(datdon$tenf_10), "\n")
+cat("variance = ", var(datdon$tenf_10), "\n")
+cat("minimum = ", min(datdon$tenf_10), "\n")
+cat("maximum = ", max(datdon$tenf_10), "\n")
+cat("mediane = ", median(datdon$tenf_10), "\n")
+cat("intervalle d'appartenance = ", range(datdon$tenf_10), "\n")
+cat("quantile = ", quantile(datdon$tenf_10, probs = 0.5), "\n")
+cat("écart interquartile = ", IQR(datdon$tenf_10), "\n")
+table(datdon$tenf_10)
+```
+```{r}
+cat("moyenne sur toutes les variables quantitatives : \n\n")
+apply(quanti,2,mean)
+
+```
+
+### 4 .2. Variables quantitatives
+
+#### (1) Caractéristiques de position
+
+```{r}
+cat("médiane sur toutes les variables : \n\n")
+apply(quanti,2,median)
+cat("\nécart interquartile sur toutes les variables : \n\n")
+apply(quanti,2,IQR)
+cat("\nquantile sur toutes les variables : \n\n")
+apply(quanti,2,quantile)
+
+```
+
+#### (2) Caractéristiques de dispersion
+
+```{r}
+cat("écart-type sur toutes les variables : \n\n")
+apply(quanti,2,sd)#écart-type 
+
+CVx=apply(quanti,2,sd)/apply(quanti,2,mean) #coeff de variation
+cat(" \nles coefficients de variation :\n ")
+
+apply(quanti,2,sd)/apply(quanti,2,mean)
+
+```
+#### (3) Graphiques
+
+```{r}
+boxplot(datdon$tenf_10,horizontal=T)
+title(main="taille de l'enfant à 10 ans")
+hist(datdon$tenf_10)
+hist(datdon$tenf_10,probability=TRUE) 
+lines(density(datdon$tenf_10),col= "red")
+```
+
+### 4 .3. Variables qualiquatives
+
+#### (1) Codage, sexenf : 1 pour “garçon” et 2 pour “fille”.
+
+
+```{r}
+
+datdon$sexenf[datdon$sexenf==1]="garcon"
+datdon$sexenf[datdon$sexenf==2]="fille"
+
+```
+
+#### (2) Traitement particulier pour les variables qualitatives
+
+```{r}
+str(datdon)
+str(datdon$sexenf)
+
+cat("Est-ce que les données de la variable sexenf sont des caractères ? \n")
+is.character(datdon$sexenf)
+
+cat("Est-ce que les données de la variable sexenf sont des factor (variable qualitative) ? \n")
+is.factor(datdon$sesxenf)
+
+#### ce n’est pas un “factor” donc pas une variable qualitative pour R. Il ne pourra donc la traitercomme telle.
+
+#Exemple on lui demande de faire un résumé statistique de la variable
+summary(datdon$sesxenf)
+
+```
+##### (a) pour signifier que c’est qualitative... on utilise la commande as.factor
+
+```{r}
+datdon$sexenf = as.factor(datdon$sexenf)
+cat("Est-ce que les données de la variable sexenf sont des factor (variable qualitative) ? \n")
+is.factor(as.factor(datdon$sexenf))
+
+str(datdon$sexenf)
+# Résumé statistique de la variable
+summary(as.factor(datdon$sexenf))
+
+#On constate qu'après l'avoir forcé à devenir une variable qualitative, il donne les bons effectifs de filles / garçons
+
+```
+
+##### (b) as.factor sur toutes les variables
+
+```{r}
+# les variables qualitatives sont les colonnes :1,2,7,10,13 et 15.
+
+for(i in c(1,2,7,10,13,15)){
+  datdon[,i]=as.factor(datdon[,i])
+}
+summary(datdon[,c(1,2,7,10,13,15)])
+
+```
+
+#### (3) Traitement univarié des variables qualitatives : la fonction table()
+
+```{r}
+table(as.factor(datdon$sexenf)) #equivalent à summary(datdon$sexenf)
+cat("\nTraitement univarié des variables qualitatives : \n\n")
+summary(quali,maxsum=9)
+cat("\nProportions filles / garçons : \n")
+table(as.factor(datdon$sexenf))/nrow(datdon) 
+
+
+```
+#### (4) Les graphiques : diagramme circulaire, en barre
+
+```{r}
+datdon$sexenf[datdon$sexenf==1]="garcon"
+datdon$sexenf[datdon$sexenf==2]="fille"
+
+pie(table(datdon$sexenf))
+title(main="Genre de l enfant")
+#Regarder help(title) pour connaître les options.
+barplot(table(datdon$sexenf))
+title(main="Genre de l enfant")
+#Modifier les couleurs du diagramme circulaire.#voir help(barplot) utiliser l’option col=c(“red”, “blue”,... autant que de modalités)
+barplot(table(datdon$sexenf),col=c("red", "blue"))
+
+```
+
+

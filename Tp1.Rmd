@@ -1,0 +1,204 @@
+---
+title: "Tp1 Imene Ouahrani - Anaëlle Dessaigne"
+output: html_document
+---
+
+
+## Gestion de répertoire du travail
+```{r}
+getwd()
+
+```
+
+## Premiers pas avec R
+```{r}
+
+0 :5
+seq(0.5,10, by=0.5)
+x=seq(0.5,10, by=0.5)
+x
+y=0 :9
+y
+c(x,y) # concatène x et y
+
+
+```
+
+```{r}
+library(MASS)
+```
+
+#### 1.1. Les vecteurs sous R.Vecteurs simples
+```{r}
+0 :5 # signal le vecteur de entier successif de 1 à 5
+#[1] 0 1 2 3 4 5
+
+l = 0.5
+a = 1
+b = 2
+seq(a,b,by=l)# sequence de valeurs de a à b avec un pas de 0.5
+seq(0.5,10, by=0.5)
+seq(1,50,by=2)
+seq(a,b,length=l)# sequence de valeurs de a à b de longueurl.
+seq(1,50,length=2)
+```
+
+##### Concaténation
+```{r}
+x=seq(0.5,10, by=0.5)
+#[1] 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10
+y=0 :9
+c(x,y) # concatène x et y
+
+```
+
+##### Extraction
+```{r}
+x[1] # la première valeur de x
+x[5]# la 5ème valeur de x
+x[1 :4]#les 4 premières valeurs de x
+x[c(1 :2,4 :8)]# affiche les deux premières valeurs et les 4ème à 8ème de x.
+x[(1 :4)]#les 4 premièresvaleurs de x
+x[-2] # enlève sa deuxième valeur à x.
+x[-c(1 :4)]#enlève les 4 premièresvaleurs de x
+```
+
+#### 1.2. Les matrices
+
+```{r}
+set.seed(10)
+M=matrix(round(rnorm(50),1),5,10)
+```
+
+##### Affichage de base pour les matrices
+
+```{r}
+dim(M)
+nrow(M)
+ncol(M)
+names(M)
+dimnames(M)
+```
+```{r}
+M[4,] # affiche la 4eme ligne de M.
+M[,5] # affiche la 5eme colonne de M.
+M[1,4] #affiche l’élément situé à la 1 ligne et 4eme colonne
+M[1 :4,]# les 4emes premières lignes de M
+M[,1 :4]# les 4emes premières colonnes de M
+M[-4,]# Enlève la 4eme ligne de M.
+M[,-5]# Enlève la 5eme colonne de M.
+
+M[c(1 :2,4 :5),]# .....
+M[c(1 :2,5),]##
+M[-c(1 :2,5),]###
+
+```
+##### Remarque.Il est possible de créer des vecteurs et matrices contenant des lettres, mots,...
+```{r}
+c(1,"a","ddd")
+c(1,"a","mon premier fichier R")
+paste("a",1 :2,sep="")
+paste("b","a",1 :4,sep="")
+paste("b","a",1 :3,sep=".")
+paste("b","a",1 :4,sep="")
+```
+
+#### 1.4. Les objets list
+```{r}
+maliste = list(vect=x,mat=M[,1:5],z=2+3,chac=paste("a",1 :2,sep=""))
+maliste
+```
+
+#### 2.1. Importation de données sous R..
+
+```{r}
+Dat=read.csv("figis_guestnull.csv")
+### Regarder l’aide deread.csv#Il y a des options pour gérer des fichiers avec d’autres spécificités.
+is.data.frame(Dat)
+```
+
+#### 2.2. Affichage d’informations sur les dimensions du tableau de données :Dat
+
+```{r}
+#affichage de la dimension de datdon
+dim(Dat )
+ncol(Dat )
+nrow(Dat )
+#affichage des noms de lignes et colonnes
+dimnames(Dat)
+rownames(Dat)
+colnames(Dat)
+```
+
+#### 2.3. Importer les données du fichier :statlab.txt.
+
+```{r}
+####Importation des données###
+datdon=scan("statlab.txt")#into a vector
+datdon=matrix(datdon,ncol=19,byrow=T)
+is.data.frame(datdon)
+```
+
+#### 2.4. Affichage d’informations sur la taille du tableau de données :datdon
+
+```{r}
+#affichage de la dimension de datdon
+dim(datdon)
+ncol(datdon)
+nrow(datdon)#affichage des noms de lignes et colonnes
+dimnames(datdon)
+rownames(datdon)
+colnames(datdon)
+```
+
+#### 2.5. Affichage des lignes et colonnes du tableau.
+
+```{r}
+datdon[,4 :5] #afficher la 4eme et 5eme colonne
+datdon[2 :4,] #afficher les lignes 2 à 4
+datdon[6 :10,] #afficher les lignes 6 à 10
+
+
+```
+
+#### 2.6. Indiquer à R qu’il s’agit d’un tableau de données, un “data frame” et gestion des noms des variables
+
+```{r}
+###Conversion en dataframe###
+datdon=data.frame(datdon)
+dimnames(datdon)
+rownames(datdon)
+colnames(datdon)
+```
+
+```{r}
+#### Gestion des lecture du nombre de variables##
+varname=c("sexenf","gsenf","tenf_n","penf_n", "tenf_10","penf_10","gsmere","agem_n","pmere_n","consm_n","tmere","pmere_10", "consm_10","agep_n", "consp_n","tpere","ppere_10","revf_n","revf_10")
+dimnames(datdon)
+rownames(datdon)
+colnames(datdon)
+
+###On va remplacer les noms initials des variables par ceux indiqués dans varname
+colnames(datdon)=varname
+dimnames(datdon)
+rownames(datdon)
+colnames(datdon)
+```
+
+#### 2.7. Affichage des colonnes du tableau après conversion en data.frame.
+
+```{r}
+datdon$sexenf # utilise le nom de la variable
+datdon[,3]# si on connait la position de la variable
+#ou
+datdon[,"sexenf"]
+```
+
+#### 2.2.
+
+```{r}
+###Résumé des variables et du tableau##
+str(datdon)# exprime le type de chaque variable. numérique ou non
+summary(datdon)
+```
+
